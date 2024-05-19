@@ -42,20 +42,17 @@ int main(int const argc, char **const argv)
         * Afterwards, write the resulting blurred image to the file out_blur.pgm.
         */
        // TODO: Implement me!
-       float *blury_image;
-
-       // create a result array and make the values start at 0.0
-
-       float result[width * height];
-
-       for (int i = 0; i < width * height; i++)
+       const *blury_image = (float *)malloc(width * height * sizeof(float));
+       if (blury_image == NULL)
        {
-              result[i] = 0.0;
+              fprintf(stderr, "Failed to allocate memory for blurred image\n");
+              array_destroy(image); // free the memory allocated for the input image
+              return 1;
        }
-       blury_image = result;
-       char *blur_file; // pointer to the file out_blur.pgm
-       blur_file = "out_blur.pgm";
        convolve(blury_image, image, width, height, gaussian_k, gaussian_w, gaussian_h);
+
+       // write blurred image to file
+       char *blur_file = "out_blur.pgm";
        write_image_to_file(blury_image, width, height, blur_file);
 
        /**
@@ -66,6 +63,48 @@ int main(int const argc, char **const argv)
         * and out_d_y.pgm respectively.
         */
        // TODO: Implement me!
+
+       // two pointers, point at two arrays for our two results, then regular stuff.
+       /**/
+       float *derivative_x = (float *)malloc(width * height * sizeof(float));
+       if (derivative_x == NULL)
+       {
+              fprintf(stderr, "Failed to allocate memory for derivative in x direction\n");
+              free(blury_image);    // free the memory allocated for the blurred image
+              array_destroy(image); // free the memory allocated for the input image
+              return 1;
+       }
+
+       derivation_y_direction(derivative_x, blury_image, width, height);
+
+       // Write derivative in x direction to file
+       char *d_x_file = "out_d_x.pgm";
+       write_image_to_file(derivative_x, width, height, d_x_file);
+
+       // Free dynamically allocated memory for the derivative in x direction
+       free(derivative_x);
+
+       // Compute the derivative in y direction using the blurred image
+       float *derivative_y = (float *)malloc(width * height * sizeof(float));
+       if (derivative_y == NULL)
+       {
+              fprintf(stderr, "Failed to allocate memory for derivative in y direction\n");
+              free(blury_image);    // Free the memory allocated for the blurred image
+              array_destroy(image); // Free the memory allocated for the input image
+              return 1;
+       }
+
+       derivation_y_direction(derivative_y, blury_image, width, height);
+
+       // Write derivative in y direction to file
+       char *d_y_file = "out_d_y.pgm";
+       write_image_to_file(derivative_y, width, height, d_y_file);
+
+       // Free dynamically allocated memory for the derivative in y direction
+       free(derivative_y);
+
+       // Free dynamically allocated memory for the blurred image
+       free(blury_image);
 
        /**
         * Compute the gradient magnitude of the blurred image by using the
