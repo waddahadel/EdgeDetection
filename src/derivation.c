@@ -10,7 +10,8 @@
 #include "image.h"
 
 void gradient_magnitude(float *result, const float *d_x, const float *d_y,
-                        int w, int h) {
+                        int w, int h)
+{
     (void)result;
     (void)d_x;
     (void)d_y;
@@ -18,16 +19,25 @@ void gradient_magnitude(float *result, const float *d_x, const float *d_y,
     (void)h;
 
     // TODO: Implement me!
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            *(result + (i * w + j)) = sqrt(pow(*(d_x + (i * w + j)), 2) + pow(*(d_y + +(i * w + j)), 2));
+        }
+    }
 }
 
 const float sobel_x[9] = {1, 0, -1, 2, 0, -2, 1, 0, -1};
 
 const float sobel_y[9] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
 
-void derivation_x_direction(float *result, const float *img, int w, int h) {
+void derivation_x_direction(float *result, const float *img, int w, int h)
+{
     convolve(result, img, w, h, sobel_x, 3, 3);
 }
 
-void derivation_y_direction(float *result, const float *img, int w, int h) {
+void derivation_y_direction(float *result, const float *img, int w, int h)
+{
     convolve(result, img, w, h, sobel_y, 3, 3);
 }
