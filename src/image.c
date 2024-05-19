@@ -163,7 +163,7 @@ float get_pixel_value(const float *img, int w, int h, int x, int y)
                 pixel = *(img + (y * w + x));
             }
         }
-        }
+    }
     return pixel;
 }
 float *array_init(int size)
@@ -171,15 +171,24 @@ float *array_init(int size)
     (void)size;
 
     // TODO: Implement me!
-
-    return NULL;
+    float *array = (float *)malloc(size * sizeof(float));
+    // NULL safety
+    if (array == NULL)
+    {
+        return NULL;
+    }
+    return array;
 }
 
 void array_destroy(float *m)
 {
     (void)m;
 
-    // TODO: Implement me!
+    // Null safety then free up.
+    if (m != NULL)
+    {
+        free(m);
+    }
 }
 
 float *read_image_from_file(const char *filename, int *w, int *h)
@@ -190,7 +199,63 @@ float *read_image_from_file(const char *filename, int *w, int *h)
 
     // TODO: Implement me!
 
-    return NULL;
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        return NULL; // File does not exist, returning a null pointer
+    }
+
+    char line[100];
+    if (fgets(line, sizeof(line), file) == NULL || strncmp(line, "P2", 2) != 0)
+    {
+        fclose(file);
+        return NULL; // Invalid header data
+    }
+
+    // Read width and height
+    if (fgets(line, sizeof(line), file) == NULL || sscanf(line, "%d %d", w, h) != 2 || *w <= 0 || *h <= 0)
+    {
+        fclose(file);
+        return NULL; // Invalid width/height data
+    }
+
+    int max_gray_value;
+    if (fgets(line, sizeof(line), file) == NULL || sscanf(line, "%d", &max_gray_value) != 1 || max_gray_value <= 0 || max_gray_value > 255)
+    {
+        fclose(file);
+        return NULL; // Invalid max gray value
+    }
+
+    int size = (*w) * (*h);
+    float *image = array_init(size);
+    if (image == NULL)
+    {
+        fclose(file);
+        return NULL; // Memory allocation failure
+    }
+
+    int pixel;
+    for (int i = 0; i < size; i++)
+    {
+        if (fscanf(file, "%d", &pixel) != 1 || pixel < 0 || pixel > 255)
+        {
+            array_destroy(image);
+            fclose(file);
+            return NULL; // Invalid pixel value
+        }
+        image[i] = (float)pixel;
+    }
+
+    // Ensure there are no extra pixels
+    if (fscanf(file, "%d", &pixel) != EOF)
+    {
+        array_destroy(image);
+        fclose(file);
+        return NULL; // Too many pixels
+    }
+
+    fclose(file);
+    return image;
 }
 
 void write_image_to_file(const float *img, int w, int h, const char *filename)
@@ -201,4 +266,20 @@ void write_image_to_file(const float *img, int w, int h, const char *filename)
     (void)filename;
 
     // TODO: Implement me!
+    FILE *file = fopen(filename, "w");
+    if (file == NULL)
+    {
+        return; // Failed to open file for writing
+    }
+
+    fprintf(file, "P2\n");
+    fprintf(file, "%d %d\n", w, h);
+    fprintf(file, "255\n");
+
+    for (int i = 0; i < w * h; i++)
+    {
+        fprintf(file, "%d\n", (int)img[i]);
+    }
+
+    fclose(file);
 }
