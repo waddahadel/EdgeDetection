@@ -87,11 +87,85 @@ float get_pixel_value(const float *img, int w, int h, int x, int y)
     (void)x;
     (void)y;
 
+    float pixel;
+
     // TODO: Implement me!
 
-    return 0;
-}
+    // the intuition is quite straightforward,we have several cases, and I will just handle them one by one
+    // we don't need any looping or so, we have some quick if else statements to do
 
+    // first check if we have the x coordinate in range or not
+    if (x >= 0 && x <= w - 1)
+    {
+        if (y >= 0 && y <= h - 1)
+        {
+            pixel = *(img + (y * w + x));
+        }
+        else if (y < 0)
+        {
+            y = abs(y) - 1;
+            pixel = *(img + (y * w + x));
+        }
+        else if (y > h - 1)
+        {
+            int offset = y - (h - 1);
+            y = h - offset;
+            pixel = *(img + (y * w + x));
+        }
+    }
+
+    else if (x < 0)
+    {
+        if (y >= 0 && y <= h - 1)
+        {
+            x = abs(x) - 1;
+            pixel = *(img + (y * w + x));
+        }
+        else if (y < 0)
+        {
+            x = abs(x) - 1;
+            y = abs(y) - 1;
+            pixel = *(img + (y * w + x));
+        }
+        else if (y > h - 1)
+        {
+            int offset = y - (h - 1);
+            y = h - offset;
+            x = abs(x) - 1;
+            pixel = *(img + (y * w + x));
+
+            {
+                /* code */
+            }
+        }
+
+        else if (x > w - 1)
+        {
+            if (y >= 0 && y <= h - 1)
+            {
+                int offset = x - (w - 1);
+                x = w - offset;
+                pixel = *(img + (y * w + x));
+            }
+            else if (y < 0)
+            {
+                y = abs(y) - 1;
+                int offset = x - (w - 1);
+                x = w - offset;
+                pixel = *(img + (y * w + x));
+            }
+            else if (y > h - 1)
+            {
+                int offset_x = x - (w - 1);
+                x = w - offset_x;
+                int offset = y - (h - 1);
+                y = h - offset;
+                pixel = *(img + (y * w + x));
+            }
+        }
+        }
+    return pixel;
+}
 float *array_init(int size)
 {
     (void)size;
