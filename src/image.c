@@ -39,6 +39,44 @@ void scale_image(float *result, const float *img, int w, int h)
     (void)h;
 
     // TODO: Implement me!
+    // first we get the minimum and maximum pixel values->
+
+    float minE = 2147483647, maxE = (-2147483647 - 1);
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            if (*(img + (i * w + j)) < minE)
+            {
+                minE = *(img + (i * w + j));
+            }
+
+            if (*(img + (i * w + j)) > maxE)
+            {
+                maxE = *(img + (i * w + j));
+            }
+        }
+    }
+
+    // get the difference between them
+    float diff = maxE - minE;
+
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            if (diff == 0)
+            {
+                // the edge case!
+                *(result + (i * w + j)) = 0;
+            }
+            else
+            {
+                // do the calculations
+                *(result + (i * w + j)) = (((*(img + (i * w + j))) - minE) / diff) * 255;
+            }
+        }
+    }
 }
 
 float get_pixel_value(const float *img, int w, int h, int x, int y)
