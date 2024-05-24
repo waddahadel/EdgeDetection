@@ -133,7 +133,7 @@ int main(int const argc, char **const argv)
        // free every unused thingy
        free(derivative_x_unscaled);
        free(derivative_y_unscaled);
-       free(gradient_magnitude_image_unscaled);
+       free(gradient_magnitude_image_scaled);
 
        /**
         * Apply the threshold to the gradient magnitude.
@@ -141,13 +141,13 @@ int main(int const argc, char **const argv)
         */
        // TODO: Implement me!
 
-       apply_threshold(gradient_magnitude_image_scaled, width, height, threshold);
+       apply_threshold(gradient_magnitude_image_unscaled, width, height, threshold);
        char *final_image = "out_edges.pgm";
-       write_image_to_file(gradient_magnitude_image_scaled, width, height, final_image);
+       write_image_to_file(gradient_magnitude_image_unscaled, width, height, final_image);
 
        // free everything
 
-       free(gradient_magnitude_image_scaled);
+       free(gradient_magnitude_image_unscaled);
 
        /**
         * Remember to free dynamically allocated memory when it is no longer used!
