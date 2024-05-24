@@ -42,7 +42,7 @@ int main(int const argc, char **const argv)
         * Afterwards, write the resulting blurred image to the file out_blur.pgm.
         */
        // TODO: Implement me!
-       const *blury_image = (float *)malloc(width * height * sizeof(float));
+       float *blury_image = (float *)malloc(width * height * sizeof(float));
        if (blury_image == NULL)
        {
               fprintf(stderr, "Failed to allocate memory for blurred image\n");
@@ -66,8 +66,9 @@ int main(int const argc, char **const argv)
 
        // two pointers, point at two arrays for our two results, then regular stuff.
        /**/
-       float *derivative_x = (float *)malloc(width * height * sizeof(float));
-       if (derivative_x == NULL)
+       float *derivative_x_unscaled = (float *)malloc(width * height * sizeof(float)); // we need both for this task and the following one.
+       float *derivative_x_scaled = (float *)malloc(width * height * sizeof(float));
+       if (derivative_x_unscaled == NULL)
        {
               fprintf(stderr, "Failed to allocate memory for derivative in x direction\n");
               free(blury_image);    // free the memory allocated for the blurred image
@@ -75,18 +76,20 @@ int main(int const argc, char **const argv)
               return 1;
        }
 
-       derivation_y_direction(derivative_x, blury_image, width, height);
+       derivation_x_direction(derivative_x_unscaled, blury_image, width, height);
+       scale_image(derivative_x_scaled, derivative_x_unscaled, width, height);
 
        // Write derivative in x direction to file
        char *d_x_file = "out_d_x.pgm";
-       write_image_to_file(derivative_x, width, height, d_x_file);
+       write_image_to_file(derivative_x_scaled, width, height, d_x_file);
 
        // Free dynamically allocated memory for the derivative in x direction
-       free(derivative_x);
+       free(derivative_x_scaled);
 
        // Compute the derivative in y direction using the blurred image
-       float *derivative_y = (float *)malloc(width * height * sizeof(float));
-       if (derivative_y == NULL)
+       float *derivative_y_unscaled = (float *)malloc(width * height * sizeof(float));
+       float *derivative_y_scaled = (float *)malloc(width * height * sizeof(float));
+       if (derivative_y_unscaled == NULL)
        {
               fprintf(stderr, "Failed to allocate memory for derivative in y direction\n");
               free(blury_image);    // Free the memory allocated for the blurred image
@@ -94,14 +97,14 @@ int main(int const argc, char **const argv)
               return 1;
        }
 
-       derivation_y_direction(derivative_y, blury_image, width, height);
-
+       derivation_y_direction(derivative_y_unscaled, blury_image, width, height);
+       scale_image(derivative_y_scaled, derivative_y_unscaled, width, height);
        // Write derivative in y direction to file
        char *d_y_file = "out_d_y.pgm";
-       write_image_to_file(derivative_y, width, height, d_y_file);
+       write_image_to_file(derivative_y_scaled, width, height, d_y_file);
 
        // Free dynamically allocated memory for the derivative in y direction
-       free(derivative_y);
+       free(derivative_y_scaled);
 
        // Free dynamically allocated memory for the blurred image
        free(blury_image);
@@ -113,12 +116,38 @@ int main(int const argc, char **const argv)
         * Afterwards, rescale the result and write it to out_gm.pgm.
         */
        // TODO: Implement me!
+       float *gradient_magnitude_image_unscaled = (float *)malloc(width * height * sizeof(float));
+       float *gradient_magnitude_image_scaled = (float *)malloc(width * height * sizeof(float));
+       if (gradient_magnitude_image_unscaled == NULL)
+       {
+              fprintf(stderr, "Failed to allocate memory for blurred image\n");
+              array_destroy(image); // free the memory allocated for the input image
+              return 1;
+       }
+       gradient_magnitude(gradient_magnitude_image_unscaled, derivative_x_unscaled, derivative_y_unscaled, width, height);
+       scale_image(gradient_magnitude_image_scaled, gradient_magnitude_image_unscaled, width, height); // scalling after the computation.
+
+       char *gradient_file = "out_gm.pgm";
+       write_image_to_file(gradient_magnitude_image_scaled, width, height, gradient_file);
+
+       // free every unused thingy
+       free(derivative_x_unscaled);
+       free(derivative_y_unscaled);
+       free(gradient_magnitude_image_unscaled);
 
        /**
         * Apply the threshold to the gradient magnitude.
         * Then write the result to the file out_edges.pgm.
         */
        // TODO: Implement me!
+
+       apply_threshold(gradient_magnitude_image_scaled, width, height, threshold);
+       char *final_image = "out_edges.pgm";
+       write_image_to_file(gradient_magnitude_image_scaled, width, height, final_image);
+
+       // free everything
+
+       free(gradient_magnitude_image_scaled);
 
        /**
         * Remember to free dynamically allocated memory when it is no longer used!
